@@ -1,0 +1,40 @@
+.wizard-container {
+    padding: 16px;
+    max-width: 980px;
+    margin: auto;
+}
+
+/* Top step badges (locked look) */
+.steps-indicator {
+    display:flex;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+.step {
+    padding: 10px 20px;
+    border-radius: 26px;
+    background: #eef1f5;
+    color: #222;
+    font-weight: 600;
+    user-select: none;
+}
+.step.locked { cursor: default; pointer-events: none; opacity: 0.95; }
+.step.active { background: #1589ff; color: #fff; }
+.step.completed { background: #28a745; color: #fff; }
+
+/* Card spacing */
+.step-card { margin-bottom: 12px; }
+.card-body { padding: 12px; }
+
+/* Table for products */
+.product-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.product-table th, .product-table td { border-bottom: 1px solid #ececec; padding: 8px; text-align: left; }
+
+/* footer buttons */
+.footer-buttons { display:flex; justify-content:space-between; margin-top: 12px; }
+
+/* Review pre */
+.review-pre { background: #f8f9fb; padding: 12px; border-radius: 6px; overflow-x: auto; }
+
+/* Inline error text */
+.error-text { color: #c62828; margin-top: 8px; font-size: 13px; }

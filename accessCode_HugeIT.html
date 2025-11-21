@@ -1,0 +1,239 @@
+<template>
+    <div class="wizard-container">
+        <!-- Top step badges (locked) -->
+        <div class="steps-indicator">
+            <div class={stepClass1}>Parameters</div>
+            <div class={stepClass2}>Products</div>
+            <div class={stepClass3}>Review</div>
+            <div class={stepClass4}>Progress</div>
+        </div>
+
+        <!-- STEP 1: PARAMETERS -->
+        <template if:true={isStep1}>
+            <lightning-card class="step-card">
+                <h2 slot="title">Parameters</h2>
+
+                <div class="card-body">
+                    <lightning-layout multiple-rows="true" pull-to-boundary="small">
+                        <!-- Number of Codes -->
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-input
+                                data-field="numberOfCodes"
+                                label="Number of Codes"
+                                type="number"
+                                value={form.numberOfCodes}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="Number of Codes is required"
+                                ></lightning-input>
+                        </lightning-layout-item>
+
+                        <!-- Status -->
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-combobox
+                                data-field="status"
+                                label="Status"
+                                options={statusOptions}
+                                value={form.status}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="Status is required">
+                            </lightning-combobox>
+                        </lightning-layout-item>
+
+                        <!-- Start / End Dates -->
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-input
+                                data-field="startDate"
+                                label="Start Date"
+                                type="date"
+                                value={form.startDate}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="Start Date is required">
+                            </lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-input
+                                data-field="endDate"
+                                label="End Date"
+                                type="date"
+                                value={form.endDate}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="End Date is required">
+                            </lightning-input>
+                        </lightning-layout-item>
+
+                        <!-- Max Uses Allowed -->
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-input
+                                data-field="maxUsesAllowed"
+                                label="Max Uses Allowed"
+                                type="number"
+                                value={form.maxUsesAllowed}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="Max Uses Allowed is required"
+                                ></lightning-input>
+                        </lightning-layout-item>
+
+                        <!-- Comment (optional) -->
+                        <lightning-layout-item padding="around-small" size="12">
+                            <lightning-textarea
+                                data-field="comment"
+                                label="Comment (optional)"
+                                value={form.comment}
+                                onchange={handleInputChange}>
+                            </lightning-textarea>
+                        </lightning-layout-item>
+
+                        <!-- Duration Type -->
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-combobox
+                                data-field="durationType"
+                                label="Default Access Duration Type"
+                                options={durationTypeOptions}
+                                value={form.durationType}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="Duration Type is required">
+                            </lightning-combobox>
+                        </lightning-layout-item>
+
+                        <!-- Duration Value -->
+                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                            <lightning-input
+                                data-field="durationValue"
+                                label="Access Duration Value"
+                                value={form.durationValue}
+                                onchange={handleInputChange}
+                                required
+                                message-when-value-missing="Duration Value is required">
+                            </lightning-input>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+            </lightning-card>
+        </template>
+
+        <!-- STEP 2: PRODUCTS -->
+        <template if:true={isStep2}>
+            <lightning-card class="step-card">
+                <h2 slot="title">Products (Optional)</h2>
+
+                <div class="card-body">
+                    <lightning-layout multiple-rows="true">
+                        <lightning-layout-item padding="around-small" size="12" medium-device-size="6">
+                            <lightning-combobox
+                                label="Select Product"
+                                value={selectedProduct}
+                                options={productOptions}
+                                onchange={handleProductSelect}>
+                            </lightning-combobox>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small" size="12" medium-device-size="3">
+                            <lightning-combobox
+                                data-override="type"
+                                label="Override Duration Type (optional)"
+                                options={durationTypeOptions}
+                                value={override.type}
+                                onchange={handleOverrideChange}>
+                            </lightning-combobox>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small" size="12" medium-device-size="3">
+                            <lightning-input
+                                data-override="value"
+                                label="Override Duration Value (optional)"
+                                value={override.value}
+                                onchange={handleOverrideChange}>
+                            </lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small" size="12">
+                            <div class="button-row">
+                                <lightning-button label="Add Product" onclick={addProduct}></lightning-button>
+                                <lightning-button label="Remove Product" variant="destructive" onclick={removeProduct}></lightning-button>
+                                <lightning-button label="Reset Overrides" onclick={resetOverrides}></lightning-button>
+                            </div>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small" size="12">
+                            <template if:true={linkedProducts.length}>
+                                <table class="product-table">
+                                    <thead>
+                                        <tr><th>Product</th><th>Duration Override</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={linkedProducts} for:item="p">
+                                            <tr key={p.id}><td>{p.name}</td><td>{p.durationText}</td></tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </template>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item padding="around-small" size="12">
+                            <template if:true={uiErrors.products}>
+                                <p class="error-text">{uiErrors.products}</p>
+                            </template>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+            </lightning-card>
+        </template>
+
+        <!-- STEP 3: REVIEW -->
+        <template if:true={isStep3}>
+            <lightning-card class="step-card">
+                <h2 slot="title">Review</h2>
+                <div class="card-body">
+                    <lightning-layout>
+                        <lightning-layout-item size="12">
+                            <h4>Parameters</h4>
+                            <pre class="review-pre">{reviewParameters}</pre>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12">
+                            <h4>Products</h4>
+                            <pre class="review-pre">{reviewProducts}</pre>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+            </lightning-card>
+        </template>
+
+        <!-- STEP 4: PROGRESS -->
+        <template if:true={isStep4}>
+            <lightning-card class="step-card">
+                <h2 slot="title">Job Progress</h2>
+                <div class="card-body">
+                    <lightning-layout>
+                        <lightning-layout-item size="12">
+                            <p><strong>Status:</strong> {jobStatus}</p>
+                            <p><strong>Codes Generated:</strong> {codesGenerated}/{form.numberOfCodes}</p>
+                            <p><strong>Elapsed Time:</strong> {elapsedTime}s</p>
+                            <div class="button-row">
+                                <lightning-button label="Retry" onclick={retryJob}></lightning-button>
+                                <lightning-button label="Cancel" variant="destructive" onclick={cancelJob}></lightning-button>
+                            </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+            </lightning-card>
+        </template>
+
+        <!-- Footer navigation -->
+        <div class="footer-buttons">
+            <lightning-button variant="neutral" label="Back" onclick={goBack} disabled={isFirstStep}></lightning-button>
+
+            <lightning-button variant="brand"
+                              label={nextLabel}
+                              onclick={goNext}
+                              disabled={isNextDisabled}>
+            </lightning-button>
+        </div>
+    </div>
+</template>
