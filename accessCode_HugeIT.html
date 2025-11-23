@@ -1,5 +1,11 @@
+<!--
+  Reference asset path (do not render / for pipeline use only):
+  /mnt/data/Screenshot 2025-11-20 at 4.55.50 PM.png
+-->
+
 <template>
     <div class="wizard-container">
+
         <!-- Top step badges (locked) -->
         <div class="steps-indicator">
             <div class={stepClass1}>Parameters</div>
@@ -12,11 +18,11 @@
         <template if:true={isStep1}>
             <lightning-card class="step-card">
                 <h2 slot="title">Parameters</h2>
-
                 <div class="card-body">
                     <lightning-layout multiple-rows="true" pull-to-boundary="small">
-                        <!-- Number of Codes -->
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+
+                        <!-- Number of Codes (half width) -->
+                        <lightning-layout-item padding="around-small" size="6">
                             <lightning-input
                                 data-field="numberOfCodes"
                                 label="Number of Codes"
@@ -25,11 +31,12 @@
                                 onchange={handleInputChange}
                                 required
                                 message-when-value-missing="Number of Codes is required"
-                                ></lightning-input>
+                                field-level-help="Total number of access codes to generate. Must be a positive integer.">
+                            </lightning-input>
                         </lightning-layout-item>
 
-                        <!-- Status -->
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                        <!-- Status (half width) -->
+                        <lightning-layout-item padding="around-small" size="6">
                             <lightning-combobox
                                 data-field="status"
                                 label="Status"
@@ -37,12 +44,13 @@
                                 value={form.status}
                                 onchange={handleInputChange}
                                 required
-                                message-when-value-missing="Status is required">
+                                message-when-value-missing="Status is required"
+                                field-level-help="Select whether generated access codes are Active or Inactive by default.">
                             </lightning-combobox>
                         </lightning-layout-item>
 
-                        <!-- Start / End Dates -->
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                        <!-- Start Date (half width) -->
+                        <lightning-layout-item padding="around-small" size="6">
                             <lightning-input
                                 data-field="startDate"
                                 label="Start Date"
@@ -50,11 +58,13 @@
                                 value={form.startDate}
                                 onchange={handleInputChange}
                                 required
-                                message-when-value-missing="Start Date is required">
+                                message-when-value-missing="Start Date is required"
+                                field-level-help="Date from which codes become valid.">
                             </lightning-input>
                         </lightning-layout-item>
 
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                        <!-- End Date (half width) -->
+                        <lightning-layout-item padding="around-small" size="6">
                             <lightning-input
                                 data-field="endDate"
                                 label="End Date"
@@ -62,12 +72,13 @@
                                 value={form.endDate}
                                 onchange={handleInputChange}
                                 required
-                                message-when-value-missing="End Date is required">
+                                message-when-value-missing="End Date is required"
+                                field-level-help="Date after which codes expire. Must be after Start Date.">
                             </lightning-input>
                         </lightning-layout-item>
 
-                        <!-- Max Uses Allowed -->
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                        <!-- Max Uses Allowed (half width) -->
+                        <lightning-layout-item padding="around-small" size="6">
                             <lightning-input
                                 data-field="maxUsesAllowed"
                                 label="Max Uses Allowed"
@@ -76,21 +87,12 @@
                                 onchange={handleInputChange}
                                 required
                                 message-when-value-missing="Max Uses Allowed is required"
-                                ></lightning-input>
+                                field-level-help="Maximum times each code can be used. Must be a positive integer.">
+                            </lightning-input>
                         </lightning-layout-item>
 
-                        <!-- Comment (optional) -->
-                        <lightning-layout-item padding="around-small" size="12">
-                            <lightning-textarea
-                                data-field="comment"
-                                label="Comment (optional)"
-                                value={form.comment}
-                                onchange={handleInputChange}>
-                            </lightning-textarea>
-                        </lightning-layout-item>
-
-                        <!-- Duration Type -->
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                        <!-- Duration Type (half width) -->
+                        <lightning-layout-item padding="around-small" size="6">
                             <lightning-combobox
                                 data-field="durationType"
                                 label="Default Access Duration Type"
@@ -98,21 +100,35 @@
                                 value={form.durationType}
                                 onchange={handleInputChange}
                                 required
-                                message-when-value-missing="Duration Type is required">
+                                message-when-value-missing="Duration Type is required"
+                                field-level-help="Choose whether duration is specified as number of days or a specific date.">
                             </lightning-combobox>
                         </lightning-layout-item>
 
-                        <!-- Duration Value -->
-                        <lightning-layout-item padding="around-small" size="12" small-device-size="12" medium-device-size="6">
+                        <!-- Comment (full width) -->
+                        <lightning-layout-item padding="around-small" size="12">
+                            <lightning-textarea
+                                data-field="comment"
+                                label="Comment (optional)"
+                                value={form.comment}
+                                onchange={handleInputChange}
+                                field-level-help="Optional internal comment to attach to this job.">
+                            </lightning-textarea>
+                        </lightning-layout-item>
+
+                        <!-- Duration Value (full width) -->
+                        <lightning-layout-item padding="around-small" size="12">
                             <lightning-input
                                 data-field="durationValue"
                                 label="Access Duration Value"
                                 value={form.durationValue}
                                 onchange={handleInputChange}
                                 required
-                                message-when-value-missing="Duration Value is required">
+                                message-when-value-missing="Duration Value is required"
+                                field-level-help="If 'Number of Days' selected, enter number of days (positive integer). If 'Specific Date' selected, enter a date (YYYY-MM-DD).">
                             </lightning-input>
                         </lightning-layout-item>
+
                     </lightning-layout>
                 </div>
             </lightning-card>
@@ -122,48 +138,55 @@
         <template if:true={isStep2}>
             <lightning-card class="step-card">
                 <h2 slot="title">Products (Optional)</h2>
-
                 <div class="card-body">
                     <lightning-layout multiple-rows="true">
-                        <lightning-layout-item padding="around-small" size="12" medium-device-size="6">
+                        <lightning-layout-item padding="around-small" size="6">
+                            <!-- NOTE: Replace with real lookup/multi-select when backend is ready -->
                             <lightning-combobox
                                 label="Select Product"
                                 value={selectedProduct}
                                 options={productOptions}
-                                onchange={handleProductSelect}>
+                                onchange={handleProductSelect}
+                                field-level-help="Temporary product selector (replace with lookup).">
                             </lightning-combobox>
                         </lightning-layout-item>
 
-                        <lightning-layout-item padding="around-small" size="12" medium-device-size="3">
+                        <lightning-layout-item padding="around-small" size="3">
                             <lightning-combobox
                                 data-override="type"
                                 label="Override Duration Type (optional)"
                                 options={durationTypeOptions}
                                 value={override.type}
-                                onchange={handleOverrideChange}>
+                                onchange={handleOverrideChange}
+                                field-level-help="Optional per-product duration type (inherits parameter default if blank).">
                             </lightning-combobox>
                         </lightning-layout-item>
 
-                        <lightning-layout-item padding="around-small" size="12" medium-device-size="3">
+                        <lightning-layout-item padding="around-small" size="3">
                             <lightning-input
                                 data-override="value"
                                 label="Override Duration Value (optional)"
                                 value={override.value}
-                                onchange={handleOverrideChange}>
+                                onchange={handleOverrideChange}
+                                field-level-help="Optional per-product duration value (inherits parameter default if blank).">
                             </lightning-input>
                         </lightning-layout-item>
 
+                        <!-- Buttons with improved spacing (full width) -->
                         <lightning-layout-item padding="around-small" size="12">
-                            <div class="button-row">
-                                <lightning-button label="Add Product" onclick={addProduct}></lightning-button>
-                                <lightning-button label="Remove Product" variant="destructive" onclick={removeProduct}></lightning-button>
-                                <lightning-button label="Reset Overrides" onclick={resetOverrides}></lightning-button>
+                            <div class="button-row product-buttons">
+                                <lightning-button class="prod-btn" label="Add Product" onclick={addProduct}></lightning-button>
+                                <lightning-button class="prod-btn" label="Remove Product" variant="destructive" onclick={removeProduct}></lightning-button>
+                                <lightning-button class="prod-btn" label="Reset Overrides" onclick={resetOverrides}></lightning-button>
+
+                                <!-- Skip button (optional navigation) -->
+                                <lightning-button class="prod-btn skip-btn" label="Skip Products" variant="neutral" onclick={skipProducts}></lightning-button>
                             </div>
                         </lightning-layout-item>
 
                         <lightning-layout-item padding="around-small" size="12">
                             <template if:true={linkedProducts.length}>
-                                <table class="product-table">
+                                <table class="product-table" role="table">
                                     <thead>
                                         <tr><th>Product</th><th>Duration Override</th></tr>
                                     </thead>
@@ -174,9 +197,6 @@
                                     </tbody>
                                 </table>
                             </template>
-                        </lightning-layout-item>
-
-                        <lightning-layout-item padding="around-small" size="12">
                             <template if:true={uiErrors.products}>
                                 <p class="error-text">{uiErrors.products}</p>
                             </template>
@@ -186,21 +206,58 @@
             </lightning-card>
         </template>
 
-        <!-- STEP 3: REVIEW -->
+        <!-- STEP 3: REVIEW (Record-style with section headers + dividers) -->
         <template if:true={isStep3}>
             <lightning-card class="step-card">
                 <h2 slot="title">Review</h2>
                 <div class="card-body">
-                    <lightning-layout>
-                        <lightning-layout-item size="12">
-                            <h4>Parameters</h4>
-                            <pre class="review-pre">{reviewParameters}</pre>
-                        </lightning-layout-item>
-                        <lightning-layout-item size="12">
-                            <h4>Products</h4>
-                            <pre class="review-pre">{reviewProducts}</pre>
-                        </lightning-layout-item>
-                    </lightning-layout>
+
+                    <!-- PARAMETERS SECTION -->
+                    <div class="review-section">
+                        <div class="section-header">PARAMETERS</div>
+
+                        <div class="record-row"><div class="label">Number of Codes</div><div class="value">{form.numberOfCodes}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">Status</div><div class="value">{form.status}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">Start Date</div><div class="value">{formattedStartDate}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">End Date</div><div class="value">{formattedEndDate}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">Max Uses Allowed</div><div class="value">{form.maxUsesAllowed}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">Duration Type</div><div class="value">{form.durationType}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">Duration Value</div><div class="value">{form.durationValue}</div></div>
+                        <div class="divider"></div>
+
+                        <div class="record-row"><div class="label">Comment</div><div class="value">{commentValue}</div></div>
+                    </div>
+
+                    <!-- PRODUCTS SECTION -->
+                    <div class="review-section">
+                        <div class="section-header">PRODUCTS</div>
+
+                        <template if:true={linkedProducts.length}>
+                            <template for:each={linkedProducts} for:item="p">
+                                <div key={p.id}>
+                                    <div class="record-row"><div class="label">{p.name}</div><div class="value">{p.durationText}</div></div>
+                                    <div class="divider"></div>
+                                </div>
+                            </template>
+                        </template>
+
+                        <template if:false={linkedProducts.length}>
+                            <div class="record-row"><div class="label">No products</div><div class="value">-</div></div>
+                        </template>
+                    </div>
+
                 </div>
             </lightning-card>
         </template>
