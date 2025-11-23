@@ -1,6 +1,9 @@
 import { LightningElement, track } from 'lwc';
 
 export default class AccessCode_HugeIT extends LightningElement {
+    // Reference image path (for pipeline/tooling). Not used in template to avoid runtime errors.
+    referenceImagePath = '/mnt/data/Screenshot 2025-11-20 at 4.55.50 PM.png';
+
     // Step state
     @track currentStep = 1;
     get isStep1() { return this.currentStep === 1; }
@@ -62,12 +65,8 @@ export default class AccessCode_HugeIT extends LightningElement {
     // ---------------------------
     handleInputChange(event) {
         const field = event.target.dataset.field;
-        // combobox and inputs set data-field / data-override as needed
         if (field) {
             this.form[field] = event.target.value;
-            // quick validation to allow enabling Next
-            // don't call reportValidity here to avoid extra UI noise
-            // we'll run reportValidity when Next is pressed
         }
     }
 
@@ -78,42 +77,27 @@ export default class AccessCode_HugeIT extends LightningElement {
 
     handleOverrideChange(event) {
         const f = event.target.dataset.override;
-        if (f) {
-            this.override[f] = event.target.value;
-        }
+        if (f) this.override[f] = event.target.value;
     }
 
     // ---------------------------
     // Validation helpers (use built-in reportValidity / setCustomValidity)
     // ---------------------------
     validateStep1Full() {
-        // Select all form inputs inside current template
         const inputs = [
             ...this.template.querySelectorAll('lightning-input[data-field]'),
             ...this.template.querySelectorAll('lightning-combobox[data-field]'),
             ...this.template.querySelectorAll('lightning-textarea[data-field]')
         ];
 
-        // Clear custom validity for date logic first
-        const start = this.form.startDate;
-        const end = this.form.endDate;
-        // Basic required validation will be handled by components (required + message-when-value-missing)
-        // but we need to set custom messages for date coherence and numeric positive checks.
-        // We'll set custom validity on the individual components when needed.
-
-        // Validate each component individually
         let valid = true;
-        inputs.forEach((cmp) => {
-            // clear previous custom validity
+        inputs.forEach(cmp => {
             try { cmp.setCustomValidity(''); } catch (e) { /* ignore */ }
-
-            // use built-in reportValidity to run required checks
             const ok = cmp.reportValidity();
             if (!ok) valid = false;
         });
 
-        // Additional numeric validations and date coherence
-        // Number of codes must be positive integer
+        // Numeric validations (positive integers)
         const numCmp = this.template.querySelector('lightning-input[data-field="numberOfCodes"]');
         if (numCmp) {
             const v = (this.form.numberOfCodes || '').toString().trim();
@@ -124,21 +108,45 @@ export default class AccessCode_HugeIT extends LightningElement {
             }
         }
 
-        const maxUsesCmp = this.template.querySelector('lightning-input[data-field="maxUsesAllowed"]');
-        if (maxUsesCmp) {
+        const maxCmp = this.template.querySelector('lightning-input[data-field="maxUsesAllowed"]');
+        if (maxCmp) {
             const v = (this.form.maxUsesAllowed || '').toString().trim();
             if (!/^\d+$/.test(v) || parseInt(v,10) <= 0) {
-                maxUsesCmp.setCustomValidity('Enter a positive integer.');
-                maxUsesCmp.reportValidity();
+                maxCmp.setCustomValidity('Enter a positive integer.');
+                maxCmp.reportValidity();
                 valid = false;
             }
         }
 
+        // Duration value conditional validation:
+        if (this.form.durationType === 'Days') {
+            // durationValue must be a positive integer
+            if (!/^\d+$/.test((this.form.durationValue || '').toString().trim())) {
+                const durCmp = this.template.querySelector('lightning-input[data-field="durationValue"]');
+                if (durCmp) {
+                    durCmp.setCustomValidity('When Duration Type is "Number of Days", Duration Value must be a positive integer.');
+                    durCmp.reportValidity();
+                    valid = false;
+                }
+            }
+        } else if (this.form.durationType === 'Date') {
+            // durationValue must be a valid date (YYYY-MM-DD)
+            const v = (this.form.durationValue || '').toString().trim();
+            if (!v || isNaN(new Date(v))) {
+                const durCmp = this.template.querySelector('lightning-input[data-field="durationValue"]');
+                if (durCmp) {
+                    durCmp.setCustomValidity('When Duration Type is "Specific Date", Duration Value must be a valid date (YYYY-MM-DD).');
+                    durCmp.reportValidity();
+                    valid = false;
+                }
+            }
+        }
+
         // Date coherence
-        if (start && end) {
-            const startDate = new Date(start);
-            const endDate = new Date(end);
-            if (endDate < startDate) {
+        if (this.form.startDate && this.form.endDate) {
+            const start = new Date(this.form.startDate);
+            const end = new Date(this.form.endDate);
+            if (end < start) {
                 const endCmp = this.template.querySelector('lightning-input[data-field="endDate"]');
                 if (endCmp) {
                     endCmp.setCustomValidity('End Date must be after Start Date.');
@@ -151,20 +159,13 @@ export default class AccessCode_HugeIT extends LightningElement {
         return valid;
     }
 
+    // Products step is optional now. Always valid. Skip button will move forward.
     validateStep2Full() {
-        // products: require at least one linked product
         this.uiErrors.products = '';
-        if (this.linkedProducts.length === 0) {
-            this.uiErrors.products = 'Please add at least one product.';
-            return false;
-        }
         return true;
     }
 
-    // ---------------------------
-    // Quick validation (for disabling Next)
-    // quickStep1Valid does lightweight checks, without showing validation UI
-    // ---------------------------
+    // quick checks for disabling Next without showing errors
     quickStep1Valid() {
         try {
             const n = (this.form.numberOfCodes || '').toString().trim();
@@ -175,21 +176,22 @@ export default class AccessCode_HugeIT extends LightningElement {
             if (!(this.form.maxUsesAllowed || '').toString().trim() || !/^\d+$/.test(this.form.maxUsesAllowed)) return false;
             if (!(this.form.durationType || '').toString().trim()) return false;
             if (!(this.form.durationValue || '').toString().trim()) return false;
+            // duration value conditional quick check
+            if (this.form.durationType === 'Days' && (!/^\d+$/.test((this.form.durationValue || '').toString().trim()))) return false;
+            if (this.form.durationType === 'Date' && isNaN(new Date(this.form.durationValue))) return false;
             if (new Date(this.form.endDate) < new Date(this.form.startDate)) return false;
             return true;
-        } catch (e) {
-            return false;
-        }
+        } catch (e) { return false; }
     }
 
+    // Products optional -> always valid quickly
     quickStep2Valid() {
-        return this.linkedProducts.length > 0;
+        return true;
     }
 
     get isNextDisabled() {
         if (this.currentStep === 1) return !this.quickStep1Valid();
         if (this.currentStep === 2) return !this.quickStep2Valid();
-        // step 3 is review; Next becomes Submit — keep enabled
         return false;
     }
 
@@ -197,26 +199,23 @@ export default class AccessCode_HugeIT extends LightningElement {
     // Navigation
     // ---------------------------
     goNext() {
-        // full validations per step (these use reportValidity and show inline errors)
         if (this.currentStep === 1) {
             if (!this.validateStep1Full()) return;
             this.currentStep = 2;
             return;
         }
-
         if (this.currentStep === 2) {
+            // products optional
             if (!this.validateStep2Full()) return;
             this.currentStep = 3;
             return;
         }
-
         if (this.currentStep === 3) {
-            // final submit
+            // final submit: revalidate parameters fully
             if (!this.validateStep1Full()) return;
-            if (!this.validateStep2Full()) return;
+            // step2 optional so no re-check
             this.startJob();
             this.currentStep = 4;
-            return;
         }
     }
 
@@ -224,8 +223,15 @@ export default class AccessCode_HugeIT extends LightningElement {
         if (this.currentStep > 1) this.currentStep--;
     }
 
+    // Skip Products action
+    skipProducts() {
+        // User chose to skip products — clear any UI errors and move to review
+        this.uiErrors.products = '';
+        this.currentStep = 3;
+    }
+
     // ---------------------------
-    // Products management
+    // Products actions
     // ---------------------------
     addProduct() {
         this.uiErrors.products = '';
@@ -241,7 +247,6 @@ export default class AccessCode_HugeIT extends LightningElement {
         const productName = (this.productOptions.find(p => p.value === this.selectedProduct) || {}).label || this.selectedProduct;
         const durationText = `${this.override.type || this.form.durationType || '-'} - ${this.override.value || this.form.durationValue || '-'}`;
         this.linkedProducts = [...this.linkedProducts, { id: this.selectedProduct, name: productName, durationText }];
-        // reset selection
         this.selectedProduct = '';
         this.override = { type: '', value: '' };
     }
@@ -260,14 +265,29 @@ export default class AccessCode_HugeIT extends LightningElement {
     }
 
     // ---------------------------
-    // Review getters
+    // Review formatting getters
     // ---------------------------
-    get reviewParameters() {
-        const copy = { ...this.form };
-        return JSON.stringify(copy, null, 2);
+    formatDate(d) {
+        if (!d) return '-';
+        try {
+            const dt = new Date(d);
+            if (isNaN(dt)) return d;
+            return dt.toLocaleDateString();
+        } catch (e) {
+            return d;
+        }
     }
-    get reviewProducts() {
-        return JSON.stringify(this.linkedProducts, null, 2);
+
+    get formattedStartDate() {
+        return this.formatDate(this.form.startDate);
+    }
+
+    get formattedEndDate() {
+        return this.formatDate(this.form.endDate);
+    }
+
+    get commentValue() {
+        return this.form.comment ? this.form.comment : '-';
     }
 
     // ---------------------------
