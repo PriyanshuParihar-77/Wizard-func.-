@@ -2,16 +2,17 @@
     padding: 16px;
     max-width: 980px;
     margin: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-/* Top step badges (locked look) */
+/* Top step badges (locked) */
 .steps-indicator {
     display:flex;
-    gap: 18px;
-    margin-bottom: 14px;
+    gap: 14px;
+    margin-bottom: 12px;
 }
 .step {
-    padding: 10px 20px;
+    padding: 10px 18px;
     border-radius: 26px;
     background: #eef1f5;
     color: #222;
@@ -26,15 +27,44 @@
 .step-card { margin-bottom: 12px; }
 .card-body { padding: 12px; }
 
-/* Table for products */
+/* Product buttons spacing (improved) */
+.product-buttons lightning-button.prod-btn { margin-right: 12px; }
+.product-buttons .skip-btn { margin-left: 18px; }
+.button-row { display:flex; gap: 12px; align-items:center; flex-wrap:wrap; }
+
+/* Product table */
 .product-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 .product-table th, .product-table td { border-bottom: 1px solid #ececec; padding: 8px; text-align: left; }
 
-/* footer buttons */
+/* Footer */
 .footer-buttons { display:flex; justify-content:space-between; margin-top: 12px; }
 
-/* Review pre */
-.review-pre { background: #f8f9fb; padding: 12px; border-radius: 6px; overflow-x: auto; }
+/* Review: record style */
+.review-section { margin-bottom: 18px; padding: 8px 0; }
+.section-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: #4b5563;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+}
+.record-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 10px 0;
+}
+.record-row .label { color: #6b7280; width: 45%; }
+.record-row .value { color: #111827; font-weight: 700; text-align: right; width: 55%; }
+
+/* Divider style */
+.divider { height: 1px; background: #eaecf0; margin: 0; }
 
 /* Inline error text */
 .error-text { color: #c62828; margin-top: 8px; font-size: 13px; }
+
+/* Small responsive tweaks - we DO NOT collapse to single column (B) */
+@media (max-width: 600px) {
+    .record-row .label, .record-row .value { text-align: right; }
+}
+
